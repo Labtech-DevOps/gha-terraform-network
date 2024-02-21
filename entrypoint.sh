@@ -18,11 +18,30 @@ create_port_entity="$INPUT_CREATEPORTENTITY"
 branch_name="port_$port_run_id"
 
 get_access_token() {
-  curl -s --location --request POST 'https://api.getport.io/v1/auth/access_token' --header 'Content-Type: application/json' --data-raw "{
+  local response
+  response=$(curl -s --location --request POST 'https://api.getport.io/v1/auth/access_token' --header 'Content-Type: application/json' --data-raw "{
     \"clientId\": \"$port_client_id\",
     \"clientSecret\": \"$port_client_secret\"
-  }" | jq -r '.accessToken'
+  }")
+
+  local exit_code=$?
+
+  if [ $exit_code -ne 0 ]; then
+    echo "Erro ao executar o comando curl. Código de saída: $exit_code"
+    return $exit_code
+  fi
+
+  local access_token
+  access_token=$(echo "$response" | jq -r '.accessToken')
+
+  if [ $? -ne 0 ]; then
+    echo "Erro ao extrair o token do JSON. Verifique se o comando jq está instalado."
+    return 1
+  fi
+
+  echo "$access_token"
 }
+
 
 send_log() {
   message=$1

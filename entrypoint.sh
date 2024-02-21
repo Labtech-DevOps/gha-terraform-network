@@ -150,7 +150,7 @@ push_to_repository() {
       git add .
       git commit -m "Initial commit after scaffolding"
       git branch -M main
-      git remote add origin https://$github_token@github.com/$org_name/$repository_name.git
+      git remote set-url origin https://pcb737:$github_token@github.com/$org_name/$repository_name.git
       git push -u origin main
   fi
 }

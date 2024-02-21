@@ -42,15 +42,26 @@ get_access_token() {
   echo "$access_token"
 }
 
-
 send_log() {
   message=$1
-  curl --location "https://api.getport.io/v1/actions/runs/$port_run_id/logs" \
+  response=$(curl --location "https://api.getport.io/v1/actions/runs/$port_run_id/logs" \
     --header "Authorization: Bearer $access_token" \
     --header "Content-Type: application/json" \
     --data "{
       \"message\": \"$message\"
-    }"
+    }")
+
+  local exit_code=$?
+
+  if [ $exit_code -ne 0 ]; then
+    echo "Erro ao executar o comando curl para enviar o log. Código de saída: $exit_code"
+    return $exit_code
+  fi
+
+  # Verifique o conteúdo da resposta para detecção de erros específicos, se necessário
+  # Exemplo: verificar se a resposta contém uma mensagem de erro conhecida
+
+  echo "$response"
 }
 
 add_link() {

@@ -15,7 +15,7 @@ port_user_inputs="$INPUT_PORTUSERINPUTS"
 monorepo_url="$INPUT_MONOREPOURL"
 scaffold_directory="$INPUT_SCAFFOLDDIRECTORY"
 create_port_entity="$INPUT_CREATEPORTENTITY"
-branch_name="port_$port_run_id"
+branch_name="main"
 git_url="$INPUT_GITHUBURL"
 
 get_access_token() {

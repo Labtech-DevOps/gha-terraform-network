@@ -46,7 +46,7 @@ add_link() {
 }
 
 create_repository() {  
-  resp=$(curl -H "Authorization: token $github_token" -H "Accept: application/json" -H "Content-Type: application/json" $git_url/users/$org_name -d '{"private": false}')
+  resp=$(curl -H "Authorization: token $github_token" -H "Accept: application/json" -H "Content-Type: application/json" $git_url/users/$org_name)
 
   userType=$(jq -r '.type' <<< "$resp")
     

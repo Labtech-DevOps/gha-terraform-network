@@ -32,3 +32,52 @@ echo "monorepo_url: $monorepo_url"
 echo "scaffold_directory: $scaffold_directory"
 echo "create_port_entity: $create_port_entity"
 echo "branch_name: $branch_name"
+
+get_access_token() {
+  curl -s --location --request POST 'https://api.getport.io/v1/auth/access_token' --header 'Content-Type: application/json' --data-raw "{
+    \"clientId\": \"$port_client_id\",
+    \"clientSecret\": \"$port_client_secret\"
+  }" | jq -r '.accessToken'
+}
+
+send_log() {
+  message=$1
+  curl --location "https://api.getport.io/v1/actions/runs/$port_run_id/logs" \
+    --header "Authorization: Bearer $access_token" \
+    --header "Content-Type: application/json" \
+    --data "{
+      \"message\": \"$message\"
+    }"
+}
+
+add_link() {
+  url=$1
+  curl --request PATCH --location "https://api.getport.io/v1/actions/runs/$port_run_id" \
+    --header "Authorization: Bearer $access_token" \
+    --header "Content-Type: application/json" \
+    --data "{
+      \"link\": \"$url\"
+    }"
+}
+
+create_repository() {  
+  resp=$(curl -H "Authorization: token $github_token" -H "Accept: application/json" -H "Content-Type: application/json" $git_url/users/$org_name)
+
+  userType=$(jq -r '.type' <<< "$resp")
+    
+  if [ $userType == "User" ]; then
+    curl -X POST -i -H "Authorization: token $github_token" -H "X-GitHub-Api-Version: 2022-11-28" \
+       -d "{ \
+          \"name\": \"$repository_name\", \"private\": true
+        }" \
+      $git_url/user/repos
+  elif [ $userType == "Organization" ]; then
+    curl -i -H "Authorization: token $github_token" \
+       -d "{ \
+          \"name\": \"$repository_name\", \"private\": true
+        }" \
+      $git_url/orgs/$org_name/repos
+  else
+    echo "Invalid user type"
+  fi
+}

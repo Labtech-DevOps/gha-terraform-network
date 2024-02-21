@@ -42,7 +42,15 @@ add_link() {
     --data "{
       \"link\": \"$url\"
     }"
+
+  # Verifica o código de retorno do curl
+  if [ $? -eq 0 ]; then
+    echo "Comando executado com sucesso (código de retorno zero)."
+  else
+    echo "Erro ao executar o comando (código de retorno diferente de zero)."
+  fi
 }
+
 
 create_repository() {  
   resp=$(curl -H "Authorization: token $github_token" -H "Accept: application/json" -H "Content-Type: application/json" $git_url/users/$org_name)

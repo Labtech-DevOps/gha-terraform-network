@@ -74,7 +74,11 @@ clone_monorepo() {
 }
 
 prepare_cookiecutter_extra_context() {
-  echo "$port_user_inputs" | jq -r '
+  # Mostra o conteúdo de port_user_inputs antes do processamento
+  echo "Input JSON: $port_user_inputs"
+
+  # Executa o jq com a opção -S para garantir que a saída seja uma única linha
+  echo "$port_user_inputs" | jq -Sr '
     with_entries(
       select(
         .key | startswith("cookiecutter_") or
@@ -97,6 +101,7 @@ prepare_cookiecutter_extra_context() {
     )
   '
 }
+
 
 cd_to_scaffold_directory() {
   if [ -n "$monorepo_url" ] && [ -n "$scaffold_directory" ]; then

@@ -48,9 +48,10 @@ add_link() {
 create_repository() {  
   resp=$(curl -H "Authorization: token $github_token" -H "Accept: application/json" -H "Content-Type: application/json" $git_url/users/$org_name)
 
+  echo "Response from GitHub API: $resp"
   userType=$(jq -r '.type' <<< "$resp")
+  echo "User type extracted: $userType"
 
-  echo "$userType"
 }
 
 clone_monorepo() {

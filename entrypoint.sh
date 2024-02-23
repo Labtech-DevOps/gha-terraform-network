@@ -15,7 +15,7 @@ port_user_inputs="$INPUT_PORTUSERINPUTS"
 monorepo_url="$INPUT_MONOREPOURL"
 scaffold_directory="$INPUT_SCAFFOLDDIRECTORY"
 create_port_entity="$INPUT_CREATEPORTENTITY"
-branch_name="main"
+branch_name="port_$port_run_id"
 git_url="$INPUT_GITHUBURL"
 
 get_access_token() {
@@ -74,8 +74,14 @@ clone_monorepo() {
 }
 
 prepare_cookiecutter_extra_context() {
-  echo "$port_user_inputs"
+  echo "$port_user_inputs" | jq -r '
+    with_entries(
+      select(.key | startswith("cookiecutter_") or . == "aws_region" or . == "name_vpc" or . == "block_cidr" or . == "availability_zone" or . == "private_subnets" or . == "public_subnets" or . == "enable_nat_gateway" or . == "single_nat_gateway" or . == "enable_vpn_gateway")
+      | .key |= sub("cookiecutter_"; "")
+    )
+  '
 }
+
 
 cd_to_scaffold_directory() {
   if [ -n "$monorepo_url" ] && [ -n "$scaffold_directory" ]; then

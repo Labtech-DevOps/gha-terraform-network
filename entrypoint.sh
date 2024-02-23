@@ -96,9 +96,6 @@ prepare_cookiecutter_extra_context() {
   '
 }
 
-}
-
-
 cd_to_scaffold_directory() {
   if [ -n "$monorepo_url" ] && [ -n "$scaffold_directory" ]; then
     cd $scaffold_directory

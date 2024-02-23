@@ -74,7 +74,28 @@ clone_monorepo() {
 }
 
 prepare_cookiecutter_extra_context() {
-  echo "$port_user_inputs"
+  # Executa o jq com a opção -S para garantir que a saída seja uma única linha
+  echo "$port_user_inputs" | jq -Sr '
+    with_entries(
+      select(
+        .key | startswith("cookiecutter_") or
+        . == "aws_region" or
+        . == "name_vpc" or
+        . == "block_cidr" or
+        . == "enable_nat_gateway" or
+        . == "single_nat_gateway" or
+        . == "enable_vpn_gateway"
+      )
+      | .key |= sub("cookiecutter_"; ""),
+      .value |= (
+        if type == "string" then .   # Se for uma string, mantenha como está
+        elif type == "array" then map(tostring)   # Se for uma lista, converta todos os elementos para string
+        else . end   # Para outros tipos, mantenha como está
+      )
+    )
+  '
+}
+
 }
 
 

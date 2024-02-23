@@ -74,12 +74,7 @@ clone_monorepo() {
 }
 
 prepare_cookiecutter_extra_context() {
-  echo "$port_user_inputs" | jq -r '
-    with_entries(
-      select(.key | startswith("cookiecutter_") or . == "aws_region" or . == "name_vpc")
-      | .key |= sub("cookiecutter_"; "")
-    )
-  '
+  echo "$port_user_inputs"
 }
 
 cd_to_scaffold_directory() {

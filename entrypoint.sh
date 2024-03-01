@@ -49,6 +49,8 @@ create_repository() {
   resp=$(curl -H "Authorization: token $github_token" -H "Accept: application/json" -H "Content-Type: application/json" $git_url/users/$org_name)
 
   userType=$(jq -r '.type' <<< "$resp")
+  echo "Response: $resp"
+  userType=$(echo "$resp" | jq -r '.type')
     
   if [ $userType == "User" ]; then
     curl -X POST -i -H "Authorization: token $github_token" -H "X-GitHub-Api-Version: 2022-11-28" \

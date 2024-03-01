@@ -74,7 +74,7 @@ clone_monorepo() {
 }
 
 prepare_cookiecutter_extra_context() {
-  echo "$port_user_inputs" | jq -c 'to_entries | map(.value |= if type == "array" then "[" + map(tostring) | join(",") + "]" else . end) | from_entries'
+  echo "$port_user_inputs" | jq -c 'walk(if type == "array" then map(tostring) else . end)'
 }
 
 cd_to_scaffold_directory() {

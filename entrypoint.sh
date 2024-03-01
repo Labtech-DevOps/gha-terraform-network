@@ -77,6 +77,8 @@ prepare_cookiecutter_extra_context() {
   echo "$port_user_inputs" | jq -r 'with_entries(select(.key | startswith("cookiecutter_")) | .key |= sub("cookiecutter_"; ""))'
 }
 
+echo "$prepare_cookiecutter_extra_context"
+
 cd_to_scaffold_directory() {
   if [ -n "$monorepo_url" ] && [ -n "$scaffold_directory" ]; then
     cd $scaffold_directory
@@ -167,7 +169,6 @@ report_to_port() {
 
 main() {
   access_token=$(get_access_token)
-  echo "====================Extra Context: $extra_context"
 
   if [ -z "$monorepo_url" ] || [ -z "$scaffold_directory" ]; then
     send_log "Creating a new repository: $repository_name 🏃"

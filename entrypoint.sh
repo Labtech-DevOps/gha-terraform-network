@@ -75,9 +75,6 @@ clone_monorepo() {
 
 prepare_cookiecutter_extra_context() {
   echo "===============Input: $port_user_inputs"
-  extra_context=$(echo "$port_user_inputs" | jq -r 'with_entries(select(.key | startswith("cookiecutter_")) | .key |= sub("cookiecutter_"; ""))')
-  echo "===============Extracted Context: $extra_context"
-  echo "===============TESTE01: $extra_context"
 }
 
 

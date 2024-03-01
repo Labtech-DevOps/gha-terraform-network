@@ -76,8 +76,7 @@ clone_monorepo() {
 prepare_cookiecutter_extra_context() {
   echo "$port_user_inputs" | jq -r '
     with_entries(
-      select(.key | startswith("cookiecutter_"))
-      | .value |= if type == "array" then "[" + map(tostring) | join(",") + "]" else . end
+      .value |= if type == "array" then "[" + map(tostring) | join(",") + "]" else . end
     )
   '
 }

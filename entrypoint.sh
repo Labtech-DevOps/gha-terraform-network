@@ -74,8 +74,11 @@ clone_monorepo() {
 }
 
 prepare_cookiecutter_extra_context() {
-  echo "$port_user_inputs" | jq -c 'walk(if type == "array" then map(. |= tostring) else . end)'
+  result=$(echo "$port_user_inputs" | jq -c 'gsub("([0-9]+)"; "\\1")')
+
+  echo "$result"
 }
+
 
 cd_to_scaffold_directory() {
   if [ -n "$monorepo_url" ] && [ -n "$scaffold_directory" ]; then

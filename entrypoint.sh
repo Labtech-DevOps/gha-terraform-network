@@ -74,8 +74,15 @@ clone_monorepo() {
 }
 
 prepare_cookiecutter_extra_context() {
-  echo "===============Input: $port_user_inputs"
+  echo "$port_user_inputs" | jq -r '
+    with_entries(
+      select(.key | startswith("cookiecutter_")) |
+      .key |= sub("cookiecutter_"; "") |
+      .value |= if type == "array" then . else tostring end
+    )
+  '
 }
+
 
 
 cd_to_scaffold_directory() {

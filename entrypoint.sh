@@ -23,6 +23,8 @@ get_access_token() {
     \"clientId\": \"$port_client_id\",
     \"clientSecret\": \"$port_client_secret\"
   }" | jq -r '.accessToken'
+
+  echo "============Access Token Response: $access_token"
 }
 
 send_log() {
@@ -48,10 +50,7 @@ add_link() {
 create_repository() {  
   resp=$(curl -H "Authorization: token $github_token" -H "Accept: application/json" -H "Content-Type: application/json" $git_url/users/$org_name)
 
-  echo "===============ALTERACAO FOI FEITA AQUI=============================="
   userType=$(jq -r '.type' <<< "$resp")
-  echo "Response: $resp"
-  userType=$(echo "$resp" | jq -r '.type')
     
   if [ $userType == "User" ]; then
     curl -X POST -i -H "Authorization: token $github_token" -H "X-GitHub-Api-Version: 2022-11-28" \
@@ -88,6 +87,9 @@ cd_to_scaffold_directory() {
 
 apply_cookiecutter_template() {
   extra_context=$(prepare_cookiecutter_extra_context)
+
+  echo "====================Extra Context: $extra_context"
+
 
   echo "🍪 Applying cookiecutter template $cookie_cutter_template with extra context $extra_context"
   # Convert extra context from JSON to arguments

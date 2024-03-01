@@ -23,8 +23,6 @@ get_access_token() {
     \"clientId\": \"$port_client_id\",
     \"clientSecret\": \"$port_client_secret\"
   }" | jq -r '.accessToken'
-
-  echo "============Access Token Response: $access_token"
 }
 
 send_log() {
@@ -172,6 +170,7 @@ report_to_port() {
 
 main() {
   access_token=$(get_access_token)
+  echo "============Access Token Response: $access_token"
 
   if [ -z "$monorepo_url" ] || [ -z "$scaffold_directory" ]; then
     send_log "Creating a new repository: $repository_name 🏃"

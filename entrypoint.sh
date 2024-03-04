@@ -74,6 +74,8 @@ clone_monorepo() {
 }
 
 prepare_cookiecutter_extra_context() {
+
+  echo "==========VARIABLE TESTING: $port_user_inputs"
   echo "$port_user_inputs" | jq -r 'with_entries(select(.key | startswith("cookiecutter_")) | .key |= sub("cookiecutter_"; ""))'
 }
 

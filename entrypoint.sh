@@ -168,6 +168,9 @@ report_to_port() {
 main() {
   access_token=$(get_access_token)
 
+ echo "================VARIABLE01 TESTING: $monorepo_url"
+ echo "================VARIABLE01 TESTING: $scaffold_directory"
+
   if [ -z "$monorepo_url" ] || [ -z "$scaffold_directory" ]; then
     send_log "Creating a new repository: $repository_name 🏃"
     create_repository

@@ -74,22 +74,7 @@ clone_monorepo() {
 }
 
 prepare_cookiecutter_extra_context() {
-  echo "$port_user_inputs" | jq -r '
-  select(.runLog.message | startswith("🍪 Applying cookiecutter template")) |
-  .runLog.message as $msg |
-  {
-    project_name: $msg | capture("project_name\":(?<project_name>[^,]+)"),
-    aws_region: $msg | capture("aws_region\":(?<aws_region>[^,]+)"),
-    name_vpc: $msg | capture("name_vpc\":(?<name_vpc>[^,]+)"),
-    block_cidr: $msg | capture("block_cidr\":(?<block_cidr>[^,]+)"),
-    availability_zone: ($msg | capture("availability_zone\":(?<availability_zone>.+)]")) | split(","),
-    private_subnets: ($msg | capture("private_subnets\":(?<private_subnets>.+)]")) | split(","),
-    public_subnets: ($msg | capture("public_subnets\":(?<public_subnets>.+)]")) | split(","),
-    enable_nat_gateway: ($msg | capture("enable_nat_gateway\":(?<enable_nat_gateway>[^,]+)")) | (. == "true"),
-    single_nat_gateway: ($msg | capture("single_nat_gateway\":(?<single_nat_gateway>[^,]+)")) | (. == "true"),
-    enable_vpn_gateway: ($msg | capture("enable_vpn_gateway\":(?<enable_vpn_gateway>[^,]+)")) | (. == "true")
-  }
-'
+  echo "$port_user_inputs" | jq -r 'with_entries(select(.key | startswith("cookiecutter_")) | .key |= sub("cookiecutter_"; ""))'
 }
 
 cd_to_scaffold_directory() {

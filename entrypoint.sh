@@ -76,6 +76,9 @@ cd_to_scaffold_directory() {
 apply_cookiecutter_template() {
   extra_context=$(prepare_cookiecutter_extra_context)
 
+  echo "🍪 Extra Context:"
+  echo "$extra_context"
+
   echo "🍪 Applying cookiecutter template $cookie_cutter_template with extra context $extra_context"
   # Convert extra context from JSON to arguments
   args=()

@@ -153,8 +153,8 @@ main() {
     cd_to_scaffold_directory
   fi
 
-  apply_cookiecutter_template
-  push_to_repository
+  #apply_cookiecutter_template
+  #push_to_repository
 }
 
 main

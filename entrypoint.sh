@@ -63,7 +63,7 @@ clone_monorepo() {
   git checkout -b $branch_name
 }
 
-#echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
+echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
 
 prepare_cookiecutter_extra_context() {
   echo "$port_user_inputs" | jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | join(" ")'

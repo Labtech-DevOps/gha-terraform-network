@@ -65,15 +65,15 @@ clone_monorepo() {
 
 #echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
 
-#prepare_cookiecutter_extra_context() {
-#  echo "$port_user_inputs" | jq -r 'with_entries(select(.key | startswith("cookiecutter_")) | .key |= sub("cookiecutter_"; ""))'  
-#}
+prepare_cookiecutter_extra_context() {
+  echo "$port_user_inputs" | jq -r 'with_entries(select(.key | startswith("cookiecutter_")) | .key |= sub("cookiecutter_"; "")) | to_entries | map("\(.key)=\(.value|tostring)") | join(" ")'
+}
 
 # Chame a função e atribua o resultado a uma variável
-#prepare_cookiecutter_result=$(prepare_cookiecutter_extra_context)
+prepare_cookiecutter_result=$(prepare_cookiecutter_extra_context)
 
 # Exiba o conteúdo da variável
-#echo "$prepare_cookiecutter_result"
+echo "$prepare_cookiecutter_result"
 
 cd_to_scaffold_directory() {
   if [ -n "$monorepo_url" ] && [ -n "$scaffold_directory" ]; then

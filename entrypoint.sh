@@ -66,7 +66,7 @@ clone_monorepo() {
 #echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
 
 prepare_cookiecutter_extra_context() {
-  echo "$port_user_inputs" | jq -r 'with_entries(select(.key | startswith("cookiecutter_")) | .key |= sub("cookiecutter_"; "")) | to_entries | map("\(.key)=\(.value|tostring)") | join(" ")'
+  echo "$port_user_inputs" | jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | join(" ")'
 }
 
 # Chame a função e atribua o resultado a uma variável

@@ -63,17 +63,34 @@ clone_monorepo() {
   git checkout -b $branch_name
 }
 
-prepare_cookiecutter_extra_context() {
-  echo "$port_user_inputs" | jq -r 'with_entries(select(.key | startswith("cookiecutter_")) | .key |= sub("cookiecutter_"; ""))'
-}
-
 cd_to_scaffold_directory() {
   if [ -n "$monorepo_url" ] && [ -n "$scaffold_directory" ]; then
     cd $scaffold_directory
   fi
 }
 
-echo "=================================TESTE PREPARE COOKIECUTTER:$prepare_cookiecutter_extra_context"
+apply_cookiecutter_template() {
+  extra_context=$(port_user_inputs)
+
+  echo "🍪 Applying cookiecutter template $cookie_cutter_template with extra context $extra_context"
+  # Convert extra context from JSON to arguments
+  args=()
+  for key in $(echo "$extra_context" | jq -r 'keys[]'); do
+      args+=("$key=$(echo "$extra_context" | jq -r ".$key")")
+  done
+
+  # Call cookiecutter with extra context arguments
+
+  echo "cookiecutter --no-input $cookie_cutter_template $args"
+
+  # Call cookiecutter with extra context arguments
+
+  if [ -n "$template_directory" ]; then
+    cookiecutter --no-input $cookie_cutter_template --directory $template_directory "${args[@]}"
+  else
+    cookiecutter --no-input $cookie_cutter_template "${args[@]}"
+  fi
+}
 
 push_to_repository() {
   if [ -n "$monorepo_url" ] && [ -n "$scaffold_directory" ]; then

@@ -64,6 +64,7 @@ clone_monorepo() {
 }
 
 echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
+echo "$port_user_inputs" | jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | join(" ")'
 
 prepare_cookiecutter_extra_context() {
   echo "$port_user_inputs" | jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | join(" ")'

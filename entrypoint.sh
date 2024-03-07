@@ -73,7 +73,7 @@ cd_to_scaffold_directory() {
   fi
 }
 
-echo "=================================TESTE PREPARE COOKIECUTTER:$prepare_cookiecutter_extra_context"
+echo "=================================TESTE PREPARE COOKIECUTTER:$port_user_inputs"
 
 push_to_repository() {
   if [ -n "$monorepo_url" ] && [ -n "$scaffold_directory" ]; then

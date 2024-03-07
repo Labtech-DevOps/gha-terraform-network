@@ -69,8 +69,11 @@ prepare_cookiecutter_extra_context() {
   echo "$port_user_inputs" | jq -r 'with_entries(select(.key | startswith("cookiecutter_")) | .key |= sub("cookiecutter_"; ""))'  
 }
 
-echo "==============XXXXXXXXXXXXXXXXXX: $prepare_cookiecutter_extra_context"
+# Chame a função e atribua o resultado a uma variável
+prepare_cookiecutter_result=$(prepare_cookiecutter_extra_context)
 
+# Exiba o conteúdo da variável
+echo "$prepare_cookiecutter_result"
 
 cd_to_scaffold_directory() {
   if [ -n "$monorepo_url" ] && [ -n "$scaffold_directory" ]; then

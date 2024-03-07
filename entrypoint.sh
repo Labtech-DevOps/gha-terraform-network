@@ -79,24 +79,6 @@ apply_cookiecutter_template() {
   echo "🍪 Extra Context:"
   echo "$extra_context"
 
-  echo "🍪 Applying cookiecutter template $cookie_cutter_template with extra context $extra_context"
-  # Convert extra context from JSON to arguments
-  args=()
-  for key in $(echo "$extra_context" | jq -r 'keys[]'); do
-      args+=("$key=$(echo "$extra_context" | jq -r ".$key")")
-  done
-
-  # Call cookiecutter with extra context arguments
-
-  echo "cookiecutter --no-input $cookie_cutter_template $args"
-
-  # Call cookiecutter with extra context arguments
-
-  if [ -n "$template_directory" ]; then
-    cookiecutter --no-input $cookie_cutter_template --directory $template_directory "${args[@]}"
-  else
-    cookiecutter --no-input $cookie_cutter_template "${args[@]}"
-  fi
 }
 
 

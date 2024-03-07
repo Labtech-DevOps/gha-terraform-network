@@ -35,28 +35,7 @@ echo "create_port_entity: $create_port_entity"
 echo "branch_name: $branch_name"
 echo "git_url: $git_url"
 
-  curl -s --location --request POST 'https://api.getport.io/v1/auth/access_token' --header 'Content-Type: application/json' --data-raw "{
-    \"clientId\": \"$port_client_id\",
-    \"clientSecret\": \"$port_client_secret\"
-  }" | jq -r '.accessToken'
-
-  message=$1
-  curl --location "https://api.getport.io/v1/actions/runs/$port_run_id/logs" \
-    --header "Authorization: Bearer $access_token" \
-    --header "Content-Type: application/json" \
-    --data "{
-      \"message\": \"$message\"
-    }"
-
-
-  url=$1
-  curl --request PATCH --location "https://api.getport.io/v1/actions/runs/$port_run_id" \
-    --header "Authorization: Bearer $access_token" \
-    --header "Content-Type: application/json" \
-    --data "{
-      \"link\": \"$url\"
-    }"
-
+create_repository() {  
   resp=$(curl -H "Authorization: token $github_token" -H "Accept: application/json" -H "Content-Type: application/json" $git_url/users/$org_name)
 
   userType=$(jq -r '.type' <<< "$resp")
@@ -76,23 +55,25 @@ echo "git_url: $git_url"
   else
     echo "Invalid user type"
   fi
+}
 
-
-
+clone_monorepo() {
   git clone $monorepo_url monorepo
   cd monorepo
   git checkout -b $branch_name
+}
 
-
+prepare_cookiecutter_extra_context() {
   echo "$port_user_inputs" | jq -r 'with_entries(select(.key | startswith("cookiecutter_")) | .key |= sub("cookiecutter_"; ""))'
+}
 
-
-
+cd_to_scaffold_directory() {
   if [ -n "$monorepo_url" ] && [ -n "$scaffold_directory" ]; then
     cd $scaffold_directory
   fi
+}
 
-
+apply_cookiecutter_template() {
   extra_context=$(prepare_cookiecutter_extra_context)
 
   echo "🍪 Applying cookiecutter template $cookie_cutter_template with extra context $extra_context"
@@ -103,21 +84,77 @@ echo "git_url: $git_url"
   done
 
   # Call cookiecutter with extra context arguments
+
+  echo "cookiecutter --no-input $cookie_cutter_template $args"
+
+  # Call cookiecutter with extra context arguments
+
   if [ -n "$template_directory" ]; then
-    echo "cookiecutter --no-input $cookie_cutter_template --directory $template_directory ${args[*]}"
     cookiecutter --no-input $cookie_cutter_template --directory $template_directory "${args[@]}"
   else
-    echo "cookiecutter --no-input $cookie_cutter_template ${args[*]}"
     cookiecutter --no-input $cookie_cutter_template "${args[@]}"
   fi
+}
 
-  # Verificar se a última execução foi bem-sucedida (código de saída igual a 0)
-  if [ $? -eq 0 ]; then
-    echo "🍪 Cookiecutter template applied successfully!"
-    # Chame a próxima função aqui
-    # next_function
+
+push_to_repository() {
+  if [ -n "$monorepo_url" ] && [ -n "$scaffold_directory" ]; then
+    git config user.name "GitHub Actions Bot"
+    git config user.email "github-actions[bot]@users.noreply.github.com"
+    git add .
+    git commit -m "Scaffolded project in $scaffold_directory"
+    git push -u origin $branch_name
+
+    send_log "Creating pull request to merge $branch_name into main 🚢"
+
+    owner=$(echo "$monorepo_url" | awk -F'/' '{print $4}')
+    repo=$(echo "$monorepo_url" | awk -F'/' '{print $5}')
+
+    echo "Owner: $owner"
+    echo "Repo: $repo"
+
+    PR_PAYLOAD=$(jq -n --arg title "Scaffolded project in $repo" --arg head "$branch_name" --arg base "main" '{
+      "title": $title,
+      "head": $head,
+      "base": $base
+    }')
+
+    echo "PR Payload: $PR_PAYLOAD"
+
+    pr_url=$(curl -X POST \
+      -H "Authorization: token $github_token" \
+      -H "Content-Type: application/json" \
+      -d "$PR_PAYLOAD" \
+      "$git_url/repos/$owner/$repo/pulls" | jq -r '.html_url')
+
+    send_log "Opened a new PR in $pr_url 🚀"
+    add_link "$pr_url"
+
+    else
+      cd "$(ls -td -- */ | head -n 1)"
+      git init
+      git config user.name "GitHub Actions Bot"
+      git config user.email "github-actions[bot]@users.noreply.github.com"
+      git add .
+      git commit -m "Initial commit after scaffolding"
+      git branch -M main
+      git remote add origin https://oauth2:$github_token@github.com/$org_name/$repository_name.git
+      git push -u origin main
+  fi
+}
+
+
+main() {
+
+  if [ -z "$monorepo_url" ] || [ -z "$scaffold_directory" ]; then
+    create_repository
   else
-    echo "❌ Error: Failed to apply cookiecutter template."
-    # Trate o erro conforme necessário
+    clone_monorepo
+    cd_to_scaffold_directory
   fi
 
+  apply_cookiecutter_template
+  push_to_repository
+}
+
+main

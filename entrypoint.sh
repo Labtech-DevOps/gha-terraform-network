@@ -19,21 +19,21 @@ branch_name="port_$port_run_id"
 git_url="$INPUT_GITHUBURL"
 
 # Imprimir os valores das variáveis
-echo "port_client_id: $port_client_id"
-echo "port_client_secret: $port_client_secret"
-echo "port_run_id: $port_run_id"
-echo "github_token: $github_token"
-echo "blueprint_identifier: $blueprint_identifier"
-echo "repository_name: $repository_name"
-echo "org_name: $org_name"
-echo "cookie_cutter_template: $cookie_cutter_template"
-echo "template_directory: $template_directory"
-echo "port_user_inputs: $port_user_inputs"
-echo "monorepo_url: $monorepo_url"
-echo "scaffold_directory: $scaffold_directory"
-echo "create_port_entity: $create_port_entity"
-echo "branch_name: $branch_name"
-echo "git_url: $git_url"
+#echo "port_client_id: $port_client_id"
+#echo "port_client_secret: $port_client_secret"
+#echo "port_run_id: $port_run_id"
+#echo "github_token: $github_token"
+#echo "blueprint_identifier: $blueprint_identifier"
+#echo "repository_name: $repository_name"
+#echo "org_name: $org_name"
+#echo "cookie_cutter_template: $cookie_cutter_template"
+#echo "template_directory: $template_directory"
+#echo "port_user_inputs: $port_user_inputs"
+#echo "monorepo_url: $monorepo_url"
+#echo "scaffold_directory: $scaffold_directory"
+#echo "create_port_entity: $create_port_entity"
+#echo "branch_name: $branch_name"
+#echo "git_url: $git_url"
 
 create_repository() {  
   resp=$(curl -H "Authorization: token $github_token" -H "Accept: application/json" -H "Content-Type: application/json" $git_url/users/$org_name)
@@ -73,14 +73,7 @@ cd_to_scaffold_directory() {
   fi
 }
 
-apply_cookiecutter_template() {
-  extra_context=$(prepare_cookiecutter_extra_context)
-
-  echo "🍪 Extra Context:"
-  echo "$extra_context"
-
-}
-
+echo "=================================TESTE PREPARE COOKIECUTTER:$prepare_cookiecutter_extra_context"
 
 push_to_repository() {
   if [ -n "$monorepo_url" ] && [ -n "$scaffold_directory" ]; then
@@ -138,7 +131,7 @@ main() {
     cd_to_scaffold_directory
   fi
 
-  apply_cookiecutter_template
+  #apply_cookiecutter_template
   #push_to_repository
 }
 

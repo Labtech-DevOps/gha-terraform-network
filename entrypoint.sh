@@ -66,7 +66,7 @@ clone_monorepo() {
 echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
 
 # Parse os dados JSON usando jq
-data=$(echo "$port_user_inputs" | jq -r 'to_entries | map(.key + "=" + (.value | tostring)) | .[]')
+data=$(echo "$port_user_inputs" | jq -r 'to_entries | map( .key + "=" + (if .value then "true" else "false" end)) | .[]')
 
 # Imprima os dados transformados
 echo "$data"

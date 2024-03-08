@@ -65,10 +65,18 @@ clone_monorepo() {
 
 echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
 
-data=$(echo "$port_user_inputs" | sed -E 's/("[^"]+)"\s*:\s*(\[[^\]]+\])/\1=\2/g' | sed -E 's/("[^"]+)"\s*:\s*("[^"]+")/\1=\2/g' | sed -E 's/("[^"]+)"\s*:\s*([^\s,]+)/\1=\2/g' | sed -E 's/"//g')
+# Parse the JSON data using sed (with caution)
+data=$(echo "$port_user_inputs" | \
+  sed -E 's/("[^"]+)"\s*:\s*\[([^\],]+(?:,\s*[^\],]+)*)\]/\1=\2/g' | \
+  sed -E 's/("[^"]+)"\s*:\s*("[^"]+")/\1=\2/g' | \
+  sed -E 's/("[^"]+)"\s*:\s*([^\s,]+)/\1=\2/g' | \
+  sed -E 's/"//g')
+
+# Remove newlines and add spaces after commas
 data=$(echo "$data" | tr -d '\n' | tr ',' ', ')
 
 echo "$data"
+
 
 
 

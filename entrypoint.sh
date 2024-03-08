@@ -65,21 +65,22 @@ clone_monorepo() {
 
 echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
 
-# Use jq to iterate through each key-value pair
-for keyval in $(jq -r 'to_entries | .[]' <<< "$port_user_inputs"); do
-  # Extract the key and value using jq
-  key=$(jq -r '.key' <<< "$keyval")
-  value=$(jq -r '.value' <<< "$keyval")
+# Capture the JSON data in the variable
+user_inputs="$port_user_inputs"
 
-  # Handle arrays with quotes for proper output
-  if [[ $(jq -r type <<< "$value") == "array" ]]; then
-    value=$(jq -r '.[] | @csv' <<< "$value")
-    value="\"[$value]\""
-  fi
+# Process the JSON data with jq
+processed_data=$(echo "$user_inputs" | jq '
+  to_entries |
+  map((k, v) => ("\(.key)=\(.value | if type == "string" then "\"" + . + "\"" else . end))')
 
-  # Print the key-value pair in the desired format
-  printf "%s=%s\n" "$key" "$value"
+# Split the processed data into lines
+IFS=$'\n' read -r -a lines <<< "$processed_data"
+
+# Print each line as a variable assignment
+for line in "${lines[@]}"; do
+  echo "$line"
 done
+
 
 #prepare_cookiecutter_extra_context() {
 #  echo "$port_user_inputs" | jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | join(" ")'

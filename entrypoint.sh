@@ -65,9 +65,21 @@ clone_monorepo() {
 
 echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
 
-# Utilize o jq para processar a variável e garantir saída formatada corretamente
-#data=$(echo "$port_user_inputs" | jq -r 'to_entries | map(.key + "=" + (.value | tonumber | @string)) | .[]' | tr -d '\n' | sed 's/,/,\ '/g')
-#echo "$data"
+# Use jq to iterate through each key-value pair
+for keyval in $(jq -r 'to_entries | .[]' <<< "$port_user_inputs"); do
+  # Extract the key and value using jq
+  key=$(jq -r '.key' <<< "$keyval")
+  value=$(jq -r '.value' <<< "$keyval")
+
+  # Handle arrays with quotes for proper output
+  if [[ $(jq -r type <<< "$value") == "array" ]]; then
+    value=$(jq -r '.[] | @csv' <<< "$value")
+    value="\"[$value]\""
+  fi
+
+  # Print the key-value pair in the desired format
+  printf "%s=%s\n" "$key" "$value"
+done
 
 #prepare_cookiecutter_extra_context() {
 #  echo "$port_user_inputs" | jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | join(" ")'

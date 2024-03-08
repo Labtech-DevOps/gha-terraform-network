@@ -65,15 +65,17 @@ clone_monorepo() {
 
 echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
 
-#!/bin/bash
+# Armazena o JSON em uma variável
+json_data=$(echo "$port_user_inputs")
 
-# Assuming your JSON data is stored in the variable port_user_inputs
-user_inputs=$(echo "$port_user_inputs" | jq -r '
-  to_entries | map( .key + "=" + (.value | tostring) ) | join(" ")
-')
+# Define um regex para capturar chaves e valores
+kv_regex='"(.*?)"\s*:\s*(.*)'
 
-# Print the transformed data
-echo "$user_inputs"
+# Converte o JSON para o formato desejado
+output=$(echo "$json_data" | sed -En "$kv_regex"'s/"//g; s/availability_zone/\1/p')
+
+# Imprime o resultado
+echo "$output"
 
 
 

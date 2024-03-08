@@ -68,7 +68,7 @@ echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
 # Capture the JSON data in the variable
 user_inputs="$port_user_inputs"
 
-# Process the JSON data with jq
+# Process the JSON data with jq (use single quotes for the entire jq filter)
 processed_data=$(echo "$user_inputs" | jq 'to_entries | map((k, v) => ("\(.key)=\(.value | if type == "string" then "\"" + . + "\"" else . end))')
 
 # Split the processed data into lines
@@ -78,6 +78,7 @@ IFS=$'\n' read -r -a lines <<< "$processed_data"
 for line in "${lines[@]}"; do
   echo "$line"
 done
+
 
 
 #prepare_cookiecutter_extra_context() {

@@ -65,7 +65,8 @@ clone_monorepo() {
 
 echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
 
-data=$(echo "$port_user_inputs" | jq -r 'to_entries | map(.key + "=" + (.value | @string)) | .[]' | tr -d '\n' | tr ',' ', ')
+# Utilize o jq para processar a variável e garantir saída formatada corretamente
+data=$(echo "$port_user_inputs" | jq -r 'to_entries | map(.key + "=" + (.value | @string)) | .[]' | tr -d '\n' | sed 's/,/,\ '/g')
 
 echo "$data"
 

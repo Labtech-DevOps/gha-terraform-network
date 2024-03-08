@@ -65,19 +65,16 @@ clone_monorepo() {
 
 echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
 
-# Capture the JSON data in the variable
-user_inputs="$port_user_inputs"
+#!/bin/bash
 
-# Process the JSON data with jq (use single quotes for the entire jq filter)
-processed_data=$(echo "$user_inputs" | jq 'to_entries | map((k, v) => ("\(.key)=\(.value | if type == "string" then "\"" + . + "\"" else . end))')
+# Assuming your JSON data is stored in the variable port_user_inputs
+user_inputs=$(echo "$port_user_inputs" | jq -r '
+  to_entries | map( .key + "=" + (.value | tostring) ) | join(" ")
+')
 
-# Split the processed data into lines
-IFS=$'\n' read -r -a lines <<< "$processed_data"
+# Print the transformed data
+echo "$user_inputs"
 
-# Print each line as a variable assignment
-for line in "${lines[@]}"; do
-  echo "$line"
-done
 
 
 

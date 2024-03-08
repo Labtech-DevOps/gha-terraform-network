@@ -65,11 +65,11 @@ clone_monorepo() {
 
 echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
 
-# Parse os dados JSON usando sed
-data=$(echo "$port_user_inputs" | sed -E 's/("[^"]+)"\s*:\s*(\[[^\]]+\])/\1=\2/g' | sed -E 's/("[^"]+)"\s*:\s*("[^"]+")/\1=\2/g' | sed -E 's/("[^"]+)"\s*:\s*([^\s,]+)/\1=\2/g')
+data=$(echo "$port_user_inputs" | sed -E 's/("[^"]+)"\s*:\s*(\[[^\]]+\])/\1=\2/g' | sed -E 's/("[^"]+)"\s*:\s*("[^"]+")/\1=\2/g' | sed -E 's/("[^"]+)"\s*:\s*([^\s,]+)/\1=\2/g' | sed -E 's/"//g')
+data=$(echo "$data" | tr -d '\n' | tr ',' ', ')
 
-# Imprima os dados transformados
 echo "$data"
+
 
 
 

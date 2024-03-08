@@ -1,88 +1,148 @@
-import requests
-import json
-import subprocess
-from collections import namedtuple
+#!/bin/bash
 
+set -e
 
-def get_access_token(port_client_id, port_client_secret):
-    url = "https://api.getport.io/v1/auth/access_token"
-    headers = {"Content-Type": "application/json"}
-    data = {"clientId": port_client_id, "clientSecret": port_client_secret}
-    response = requests.post(url, headers=headers, json=data)
-    response.raise_for_status()
-    return response.json()["accessToken"]
+port_client_id="$INPUT_PORTCLIENTID"
+port_client_secret="$INPUT_PORTCLIENTSECRET"
+port_run_id="$INPUT_PORTRUNID"
+github_token="$INPUT_TOKEN"
+blueprint_identifier="$INPUT_BLUEPRINTIDENTIFIER"
+repository_name="$INPUT_REPOSITORYNAME"
+org_name="$INPUT_ORGANIZATIONNAME"
+cookie_cutter_template="$INPUT_COOKIECUTTERTEMPLATE"
+template_directory="$INPUT_TEMPLATEDIRECTORY"
+port_user_inputs="$INPUT_PORTUSERINPUTS"
+monorepo_url="$INPUT_MONOREPOURL"
+scaffold_directory="$INPUT_SCAFFOLDDIRECTORY"
+create_port_entity="$INPUT_CREATEPORTENTITY"
+branch_name="port_$port_run_id"
+git_url="$INPUT_GITHUBURL"
 
+# Imprimir os valores das variáveis
+#echo "port_client_id: $port_client_id"
+#echo "port_client_secret: $port_client_secret"
+#echo "port_run_id: $port_run_id"
+#echo "github_token: $github_token"
+#echo "blueprint_identifier: $blueprint_identifier"
+#echo "repository_name: $repository_name"
+#echo "org_name: $org_name"
+#echo "cookie_cutter_template: $cookie_cutter_template"
+#echo "template_directory: $template_directory"
+#echo "port_user_inputs: $port_user_inputs"
+#echo "monorepo_url: $monorepo_url"
+#echo "scaffold_directory: $scaffold_directory"
+#echo "create_port_entity: $create_port_entity"
+#echo "branch_name: $branch_name"
+#echo "git_url: $git_url"
 
-def send_log(message, access_token):
-    url = f"https://api.getport.io/v1/actions/runs/{port_run_id}/logs"
-    headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
-    data = {"message": message}
-    requests.post(url, headers=headers, json=data)
+create_repository() {  
+  resp=$(curl -H "Authorization: token $github_token" -H "Accept: application/json" -H "Content-Type: application/json" $git_url/users/$org_name)
 
+  userType=$(jq -r '.type' <<< "$resp")
 
-def add_link(url, access_token):
-    url = f"https://api.getport.io/v1/actions/runs/{port_run_id}"
-    headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
-    data = {"link": url}
-    requests.patch(url, headers=headers, json=data)
+  if [ $userType == "User" ]; then
+    curl -X POST -i -H "Authorization: token $github_token" -H "X-GitHub-Api-Version: 2022-11-28" \
+       -d "{ \
+          \"name\": \"$repository_name\", \"private\": true
+        }" \
+      $git_url/user/repos
+  elif [ $userType == "Organization" ]; then
+    curl -i -H "Authorization: token $github_token" \
+       -d "{ \
+          \"name\": \"$repository_name\", \"private\": true
+        }" \
+      $git_url/orgs/$org_name/repos
+  else
+    echo "Invalid user type"
+  fi
+}
 
+clone_monorepo() {
+  git clone $monorepo_url monorepo
+  cd monorepo
+  git checkout -b $branch_name
+}
 
-def create_repository(github_token, org_name, repository_name, git_url):
-    url = f"{git_url}/users/{org_name}"
-    headers = {"Authorization": f"token {github_token}", "Accept": "application/json", "Content-Type": "application/json"}
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()
+echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
 
-    user_type = response.json()["type"]
+# Utilize o jq para processar a variável e garantir saída formatada corretamente
+#data=$(echo "$port_user_inputs" | jq -r 'to_entries | map(.key + "=" + (.value | tonumber | @string)) | .[]' | tr -d '\n' | sed 's/,/,\ '/g')
+#echo "$data"
 
-    if user_type == "User":
-        url = f"{git_url}/user/repos"
-        data = {"name": repository_name, "private": True}
-        headers["X-GitHub-Api-Version"] = "2022-11-28"
-        requests.post(url, headers=headers, json=data)
-    elif user_type == "Organization":
-        url = f"{git_url}/orgs/{org_name}/repos"
-        data = {"name": repository_name, "private": True}
-        requests.post(url, headers=headers, json=data)
-    else:
-        raise ValueError("Invalid user type")
-
-
-def clone_monorepo(monorepo_url, branch_name):
-    subprocess.run(["git", "clone", monorepo_url, "monorepo"])
-    subprocess.run(["git", "checkout", "-b", branch_name], cwd="monorepo")
-
-
-def prepare_cookiecutter_extra_context(port_user_inputs):
-    process = subprocess.Popen(
-        ["jq", "-r", '.with_entries(select(.key | startswith("cookiecutter_")) | .key |= sub("cookiecutter_"; ""))'],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
-        text=True,
-    )
-    output, _ = process.communicate(port_user_inputs, timeout=10)
-    return output.strip()
-
-
-def cd_to_scaffold_directory(monorepo_url, scaffold_directory):
-    if monorepo_url and scaffold_directory:
-        subprocess.run(["cd", scaffold_directory])
-
-
-def apply_cookiecutter_template(cookie_cutter_template, extra_context, template_directory=None):
-    print(f" Applying cookiecutter template {cookie_cutter_template} with extra context {extra_context}")
-
-    # Convert extra context to arguments
-    args = []
-    for key in extra_context.splitlines():
-        value = key.split("=", 1)[1]
-        args.append(f"{key.split('=')[0]}={value}")
-
-    # Call cookiecutter with extra context arguments
-    print(f"cookiecutter --no-input {cookie_cutter_template} {' '.join(args)}")
-    if template_directory:
-        subprocess.run(
-            ["cookiecutter", "--no-input", cookie_cutter_template, *args], cwd=template_directory
-        )
-    else:
+#prepare_cookiecutter_extra_context() {
+#  echo "$port_user_inputs" | jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | join(" ")'
+#}
+# Chame a função e atribua o resultado a uma variável
+#prepare_cookiecutter_result=$(prepare_cookiecutter_extra_context)
+# Exiba o conteúdo da variável
+#echo "$prepare_cookiecutter_result"
+cd_to_scaffold_directory() {
+  if [ -n "$monorepo_url" ] && [ -n "$scaffold_directory" ]; then
+    cd $scaffold_directory
+  fi
+}
+apply_cookiecutter_template() {
+  #extra_context=$(prepare_cookiecutter_extra_context)
+  echo "🍪 Applying cookiecutter template $cookie_cutter_template with extra context $port_user_inputs"
+  # Convert extra context from JSON to arguments
+  args=()
+  for key in $(echo "$port_user_inputs" | jq -r 'keys[]'); do
+      args+=("$key=$(echo "$port_user_inputs" | jq -r ".$key")")
+  done
+  # Call cookiecutter with extra context arguments
+  echo "cookiecutter --no-input $cookie_cutter_template $args"
+  # Call cookiecutter with extra context arguments
+  if [ -n "$template_directory" ]; then
+    cookiecutter --no-input $cookie_cutter_template --directory $template_directory "${args[@]}"
+  else
+    cookiecutter --no-input $cookie_cutter_template "${args[@]}"
+  fi
+}
+push_to_repository() {
+  if [ -n "$monorepo_url" ] && [ -n "$scaffold_directory" ]; then
+    git config user.name "GitHub Actions Bot"
+    git config user.email "github-actions[bot]@users.noreply.github.com"
+    git add .
+    git commit -m "Scaffolded project in $scaffold_directory"
+    git push -u origin $branch_name
+    send_log "Creating pull request to merge $branch_name into main 🚢"
+    owner=$(echo "$monorepo_url" | awk -F'/' '{print $4}')
+    repo=$(echo "$monorepo_url" | awk -F'/' '{print $5}')
+    echo "Owner: $owner"
+    echo "Repo: $repo"
+    PR_PAYLOAD=$(jq -n --arg title "Scaffolded project in $repo" --arg head "$branch_name" --arg base "main" '{
+      "title": $title,
+      "head": $head,
+      "base": $base
+    }')
+    echo "PR Payload: $PR_PAYLOAD"
+    pr_url=$(curl -X POST \
+      -H "Authorization: token $github_token" \
+      -H "Content-Type: application/json" \
+      -d "$PR_PAYLOAD" \
+      "$git_url/repos/$owner/$repo/pulls" | jq -r '.html_url')
+    send_log "Opened a new PR in $pr_url 🚀"
+    add_link "$pr_url"
+    else
+      cd "$(ls -td -- */ | head -n 1)"
+      git init
+      git config user.name "GitHub Actions Bot"
+      git config user.email "github-actions[bot]@users.noreply.github.com"
+      git add .
+      git commit -m "Initial commit after scaffolding"
+      git branch -M main
+      git remote add origin https://oauth2:$github_token@github.com/$org_name/$repository_name.git
+      git push -u origin main
+  fi
+}
+main() {
+  if [ -z "$monorepo_url" ] || [ -z "$scaffold_directory" ]; then
+    create_repository
+  else
+    clone_monorepo
+    cd_to_scaffold_directory
+  fi
+  #apply_cookiecutter_template
+  #push_to_repository
+}
+main

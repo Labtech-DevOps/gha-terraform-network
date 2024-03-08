@@ -69,9 +69,7 @@ echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
 user_inputs="$port_user_inputs"
 
 # Process the JSON data with jq
-processed_data=$(echo "$user_inputs" | jq '
-  to_entries |
-  map((k, v) => ("\(.key)=\(.value | if type == "string" then "\"" + . + "\"" else . end))')
+processed_data=$(echo "$user_inputs" | jq 'to_entries | map((k, v) => ("\(.key)=\(.value | if type == "string" then "\"" + . + "\"" else . end))')
 
 # Split the processed data into lines
 IFS=$'\n' read -r -a lines <<< "$processed_data"

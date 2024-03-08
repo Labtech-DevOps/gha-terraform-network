@@ -72,10 +72,11 @@ json_data=$(echo "$port_user_inputs")
 kv_regex='"(.*?)"\s*:\s*(.*)'
 
 # Converte o JSON para o formato desejado
-output=$(echo "$json_data" | sed -En "$kv_regex"'s/"//g; s/availability_zone/\1/p')
+output=$(echo "$json_data" | sed -En "$kv_regex"'s/"//g; s/availability_zone/"\1"/p')
 
 # Imprime o resultado
 echo "$output"
+
 
 
 

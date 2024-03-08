@@ -67,31 +67,19 @@ echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
 
 
 # Assuming your JSON data is stored in the variable port_user_inputs
-user_inputs_json="$port_user_inputs"
-
-# Use jq to process the JSON data
-IFS=$'\n' read -r -d '' project_name aws_region name_vpc block_cidr \
- availability_zone private_subnets public_subnets enable_nat_gateway single_nat_gateway enable_vpn_gateway <<< "$user_inputs_json" \
-  jq -r '
+user_inputs_json="<span class="math-inline">port\_user\_inputs"
+\# Use jq to process the JSON data
+formatted\_output\=</span>(jq -r '
     . as entries |
     map(.key + "=" + (.value | tostring)) |
     join(" ")
-  '
+  ' <<< "$user_inputs_json")
 
 # Print the formatted output with each key-value pair on a new line
-echo "project_name=$project_name"
-echo "aws_region=$aws_region"
-echo "name_vpc=$name_vpc"
-echo "block_cidr=$block_cidr"
-echo "availability_zone=$availability_zone"
-echo "private_subnets=$private_subnets"
-echo "public_subnets=$public_subnets"
-echo "enable_nat_gateway=$enable_nat_gateway"
-echo "single_nat_gateway=$single_nat_gateway"
-echo "enable_vpn_gateway=$enable_vpn_gateway"
-
-
-
+IFS='=' read -r -a key_value_pairs <<< "<span class="math-inline">formatted\_output"
+for pair in "</span>{key_value_pairs[@]}"; do
+  echo "$pair"
+done
 
 
 #prepare_cookiecutter_extra_context() {

@@ -66,11 +66,13 @@ clone_monorepo() {
 echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
 
 # Parse os dados JSON usando jq
-data=$(echo "$port_user_inputs" | jq -r 'to_entries | map( .key + "=" + (if .value then "true" else "false" end)) | .[]')
+data=$(echo "$port_user_inputs" | jq -n \
+    'to_entries | map(
+        "\(.key) = \(.value | if type == "array" then join(",") else . end)"
+    ) | join("\n")')
 
 # Imprima os dados transformados
 echo "$data"
-
 
 
 #prepare_cookiecutter_extra_context() {

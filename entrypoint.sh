@@ -65,7 +65,6 @@ clone_monorepo() {
 
 echo "==============XXXXXXXXXXXXXXXXXX: $port_user_inputs"
 
-#!/bin/bash
 
 # Assuming your JSON data is stored in the variable port_user_inputs
 user_inputs_json="$port_user_inputs"
